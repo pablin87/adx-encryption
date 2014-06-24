@@ -1,0 +1,4 @@
+This module contains useful tools to decrypt and encrypt adx stuff.
+
+Use it as a submodule of other adx related projects.
+
