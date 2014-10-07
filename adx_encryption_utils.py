@@ -6,6 +6,7 @@ Created on 18/06/2014
 import base64
 import hmac
 import hashlib
+import realtime_bidding_pb2 as rtb_pb2
 
 class AdxEncryptionException(Exception): pass
 
@@ -77,7 +78,7 @@ def adx_encrypt_price(price, enc_key, int_key, iv):
 def chunks(l, n): 
     return [l[x: x+n] for x in xrange(0, len(l), n)]
 
-def decrypt_HyperlocalSet(enc_bytes, enc_key, int_key = None):
+def adx_decrypt(enc_bytes, enc_key, int_key = None):
     iv, cipher, sig = get_iv_cipher_signature(enc_bytes)
     
     cipher_chunks = chunks(cipher, 20)
@@ -97,7 +98,7 @@ def decrypt_HyperlocalSet(enc_bytes, enc_key, int_key = None):
                                          (signature, sig))
     return byte_array
 
-def encrypt_HyperlocalSet(byte_array, enc_key, int_key, iv):
+def adx_encrypt(byte_array, enc_key, int_key, iv):
     
     sections = chunks(byte_array, 20)
     enc_sections = ""
@@ -113,6 +114,17 @@ def encrypt_HyperlocalSet(byte_array, enc_key, int_key, iv):
     final_msg = iv + enc_sections + signature
     
     return final_msg
+
+def decrypt_hyperlocalset(hyperlocalset, enc_key, int_key):
+    dec_hyp = adx_decrypt(hyperlocalset, enc_key, int_key)
+    hpls = rtb_pb2.BidRequest.HyperlocalSet()
+    hpls.ParseFromString(dec_hyp)
+    return hpls
+
+def encrypt_hyperlocalset(hyperlocalset, enc_key, int_key, iv):
+    bts = hyperlocalset.SerializePartialToString()
+    enc_hyp = adx_encrypt(bts, enc_key, int_key, iv)
+    return enc_hyp
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
